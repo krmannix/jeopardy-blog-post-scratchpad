@@ -22,8 +22,8 @@ async function fetchData() {
 
   let gameNumber = 1;
   while (await fetchAndWriteData(stream, gameNumber)) {
-    console.log(`Finish ${gameNumber}`)
-    gameNumber += 1;
+    console.log(`Finished ${gameNumber}`)
+    gameNumber++;
   }
 
   stream.end();
@@ -33,7 +33,7 @@ async function fetchAndWriteData(stream, gameNumber) {
   const page = await fetchGameData(gameNumber);
 
   if (isValidPage(page)) {
-    writeCsv(stream, parsePage(gameNumber, page))
+    if (!isEmptyPage(page)) writeCsv(stream, parsePage(gameNumber, page))
     return true;
   } else return false;
 }
@@ -43,7 +43,11 @@ function writeCsv(stream, data) {
 }
 
 function isValidPage(page) {
-  return page('#jeopardy_round').length > 0;
+  return page('#contestants').length > 0;
+}
+
+function isEmptyPage(page) {
+  return page('#jeopardy_round').length == 0;
 }
 
 function parsePage(gameNumber, page) {
@@ -53,8 +57,8 @@ function parsePage(gameNumber, page) {
   return [
     gameNumber,
     findGameDate(page),
-    monospace(findDailyDoubleIndices(jeopardyTable), 1, ''),
-    ...monospace(findDailyDoubleIndices(doubleJeopardyTable), 2, ''),
+    monospace(findDailyDoubleIndices(jeopardyTable), 1, [-1, -1]),
+    ...monospace(findDailyDoubleIndices(doubleJeopardyTable), 2, [-1, -1]),
   ];
 }
 
